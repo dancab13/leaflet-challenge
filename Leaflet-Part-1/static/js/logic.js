@@ -1,125 +1,127 @@
-// Store our API endpoint as queryUrl.
+// Store the API endpoint as queryUrl.
 let queryUrl = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson';
 
-// Perform a GET request to the query URL/
+// Perform a GET request to the query URL.
 d3.json(queryUrl).then(function (data) {
+  // Log the data:
   console.log(data)
-
+  // Run a function we'll create below and give it the data we just collected:
   variables(data.features)
 });
 
-  // let earthquake = data.features
-  // console.log(earthquake)
-
-  let myMap = L.map("map", {
-    center: [37.862999, -122.2423325],
-    zoom: 7
-  });
+// Create the map variable.
+let myMap = L.map("map", {
+  center: [37.862999, -122.2423325],
+  zoom: 7
+});
   
-  // Adding a tile layer (the background map image) to our map:
-  // We use the addTo() method to add objects to our map.
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  }).addTo(myMap);
+// Add a tile layer (the background map image) to the map.
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(myMap);
 
-  function variables(earthquake) {
-    let coordinates = []
-    let lat = []
-    let lon = []
-    let properties = []
-    let mag = []
-    let place = []
-    let depth = []
-    let depthList = []
-    console.log(depthList)
-
-    for (let i = 0; i < earthquake.length; i++) {
-      coordinates = earthquake[i].geometry.coordinates;
-      lat = coordinates[1]
-      lon = coordinates[0]
-      depth = coordinates[2]
-      depthList.push(depth)
-        
-      properties = earthquake[i].properties
-      mag = properties.mag
-      place = properties.place
-    //}
-
-    //maxMin(depthList)
-
-    // Stack Overflow helped me get the following code to find the max and min of a JavaScript array.
-    //function maxMin(arg) {
-        var sorted = depthList.sort(function(a, b) {
-          return a - b;
-          });
-        console.log(sorted)
-        var smallest = sorted[0],                                       
-            largest  = sorted[sorted.length - 1];
-        
-        console.log('Smallest: ' + smallest);
-        console.log('Largest: ' + largest);
+// Create a function that collects/passes along the main JSON data and creates the variables.
+function variables(earthquake) {
   
-        let depthRange = largest - smallest
-        console.log(depthRange)
+  // Initialie the variables.
+  let coordinates = []
+  let lat = []
+  let lon = []
+  let properties = []
+  let mag = []
+  let place = []
+  let depth = []
+  let depthList = []
+  
+  //Log the last variable to check it.
+  console.log(depthList)
 
-        let firstSixth = []
-        let secondSixth = []
-        let thirdSixth = []
-        let fourthSixth = []
-        let fifthSixth = []
-        
-      //  colorDepth(depthRange, depth)
-      //};
+  // Loop through the data to create the variables.
+  for (let i = 0; i < earthquake.length; i++) {
+    coordinates = earthquake[i].geometry.coordinates;
+    lat = coordinates[1]
+    lon = coordinates[0]
+    depth = coordinates[2]
+    depthList.push(depth)
+      
+    properties = earthquake[i].properties
+    mag = properties.mag
+    place = properties.place
 
-      //function colorDepth(arg1, arg2) {
-        let colors = ['#fef0d9','#fdd49e','#fdbb84','#fc8d59','#e34a33','#b30000']
-        firstSixth = depthRange * (1/6)
-        secondSixth = depthRange * (1/3)
-        thirdSixth = depthRange * (1/2)
-        fourthSixth = depthRange * (2/3)
-        fifthSixth = depthRange * (5/6)
-      function colorDepth() {  
-        if (depth <= firstSixth) {
-          return colors[0]
-        }
-        else if (depth <= secondSixth) {
-          return colors[1]
-        }
-        else if (depth <= thirdSixth) {
-          return colors[2]
-        }
-        else if (depth <= fourthSixth) {
-          return colors[3]
-        }
-        else if (depth <= fifthSixth) {
-          return colors[4]
-        }
-        else return colors[5]
-      };
+    // While still in the for loop, create the circle markers for each entry
+    L.circleMarker([lat, lon], {
+    fillOpacity: 0.85,
+    color: 'black',
+    weight: 0.25,
+    // Make the fill color correspond to the depth using a function we'll create below.
+    fillColor: colorDepth(depth),
+    // Make the marker size correspond to the magnitude using a function we'll create below.
+    radius: markerSize(mag)
+  }).bindPopup(`<h3>${place}</h3> <hr> <h4>Magnitude: ${mag}<br>Depth: ${depth}</h4>`).addTo(myMap);
+  };
 
-      function markerSize(arg) {
-        if (arg > 0) {
-          return (Math.sqrt(arg) * 8)
-        }
-        else if (arg < 0) {
-          let pos = arg * -1
-          return (Math.sqrt(pos) * 8)
-        }
-        else if (arg == 0) {
-          return 0.00001
-        }}
+  // Create the function to associate the color with the depth.
+  function colorDepth(d) {
+    let colors = ['#ffffb2','#fed976','#feb24c','#fd8d3c','#fc4e2a','#e31a1c','#b10026']
+  
+    if (d <= 10) {
+      return colors[0]
+    }
+    else if (d <= 30) {
+      return colors[1]
+    }
+    else if (d <= 50) {
+      return colors[2]
+    }
+    else if (d <= 70) {
+      return colors[3]
+    }
+    else if (d <= 90) {
+      return colors[4]
+    }
+    else return colors[5]
+  };
 
-    for (let i = 0; i < earthquake.length; i++) {
-      //function circle() {
-      L.circleMarker([lat, lon], {
-      fillOpacity: 0.75,
-      color: 'black',
-      weight: 0.25,
-      fillColor: colorDepth(),
-      // Setting our circle's radius to equal the output of our markerSize() function:
-      // This will make our marker's size proportionate to its population.
-      radius: markerSize(mag)
-    }).bindPopup(`<h1>${place}</h1> <hr> <h3>Magnitude: ${mag} | Depth: ${depth}</h3>`).addTo(myMap);
+  // Create the function to associate the marker size with the magnitude.
+  // Note that some magnitudes may be 0, missing, or even negative, and trying to get a square root of those will result in an error.
+  function markerSize(arg) {
+    if (arg > 0) {
+      return (Math.sqrt(arg) * 8)
+    }
+    else if (arg < 0) {
+      let pos = arg * -1
+      return (Math.sqrt(pos) * 8)
+    }
+    else if (arg == 0) {
+      return 0.00001
+    }
+  };
+
+  // Create the function for the legend.
+  function mapLegend() {
+    // The code below comes from Leaflet's tutorial on making a choropleth map
+    var legend = L.control({position: 'bottomright'});
+
+    legend.onAdd = function(map) {
+    var div = L.DomUtil.create('div', 'legend')
+        // Set the grades to match the majority of the depth data.
+        grades = [-10, 10, 30, 50, 70, 90],
+        labels = [];
+
+    // Loop through the grades and generate a label with a colored square for each grade.
+    for (var i = 0; i < grades.length; i++) {
+        div.innerHTML +=
+        '<i style="background:' + colorDepth(grades[i] + 1) + '"></i> ' +
+        grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
     }
 
-};}
+    return div;
+    };
+
+    legend.addTo(myMap);
+};
+
+// Run the map legend function.
+mapLegend();
+
+};
