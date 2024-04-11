@@ -48,7 +48,7 @@ function variables(earthquake) {
     mag = properties.mag
     place = properties.place
 
-    // While still in the for loop, create the circle markers for each entry
+    // While still in the for loop, create the circle markers for each entry.
     L.circleMarker([lat, lon], {
     fillOpacity: 0.85,
     color: 'black',
@@ -90,7 +90,7 @@ function variables(earthquake) {
     }
     else if (arg < 0) {
       let pos = arg * -1
-      return (Math.sqrt(pos) * 8)
+      return (Math.sqrt(pos) * 1)
     }
     else if (arg == 0) {
       return 0.00001
@@ -98,8 +98,8 @@ function variables(earthquake) {
   };
 
   // Create the function for the legend.
-  function mapLegend() {
-    // The code below comes from Leaflet's tutorial on making a choropleth map
+  function mapLegend(map) {
+    // The code below comes from Leaflet's tutorial on making a choropleth map.
     var legend = L.control({position: 'bottomright'});
 
     legend.onAdd = function(map) {
@@ -118,10 +118,10 @@ function variables(earthquake) {
     return div;
     };
 
-    legend.addTo(myMap);
-};
+    legend.addTo(map);
+  };
 
 // Run the map legend function.
-mapLegend();
+mapLegend(myMap);
 
 };
